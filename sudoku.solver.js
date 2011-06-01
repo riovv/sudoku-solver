@@ -112,14 +112,13 @@
    
     sudoku.solve = function (gridDigits) {
         // Get a new copy of the starting point.
-        var s, digit;
+        var s;
         sudoku.solver.digits = sudoku.clone(sudoku.DIGITS);
         
         // Try to assign digits from the grid.
         for (s in gridDigits) {
             if (gridDigits.hasOwnProperty(s)) {
-                digit = gridDigits[s];
-                if (!sudoku.solver.assign(sudoku.solver.digits, s, digit)) {
+                if (!sudoku.solver.assign(sudoku.solver.digits, s, gridDigits[s])) {
                     return false;
                 }            
             }
@@ -146,8 +145,32 @@
         
         return gridDigits;
     };
+    
+    sudoku.populateGrid = function (digits) {
+        var i,
+            gridDigits = {},
+            nodeList = global.document.querySelectorAll('table#sudoku tr td input'),
+            nNodes = nodeList.length;
+            
+        for (i = 0; i < nNodes; i++) {
+            if (digits[nodeList[i].id].length === 1) {
+                gridDigits[nodeList[i].id] = nodeList[i].value = digits[nodeList[i].id];
+            }
+        }
+        
+        return gridDigits;    
+    };
+    
+    sudoku.clearGrid = function () {
+        var i,
+            nodeList = global.document.querySelectorAll('table#sudoku tr td input'),
+            nNodes = nodeList.length;
+        
+        for (i = 0; i < nNodes; i++) {
+            nodeList[i].value = "";
+        }
+    };
    
-       
     global.sudoku = sudoku;
     return global.sudoku;
    
