@@ -3,8 +3,19 @@
         background-color: #bada55;
     }
     section#main {
-        width: 500px;
+        width: 432px;
         margin: 0 auto;
+    }
+    button {
+        display: inline;
+        width: 40%;
+        height: 34px;
+        font-size: 24px;
+        margin: 10px 0 0 0;
+    }
+    button#solve {
+        width: 58%;
+        margin-right: 2%;
     }
     h1 {
         font-family: sans-serif;
@@ -137,5 +148,6 @@
 			<td><input id="I9" size="1" maxlength="1" type="text"></td>
 		</tr>	
 	</tbody></table>
+	<button id="solve" OnClick="javascript: sudoku.populateGrid(sudoku.solve(sudoku.parseGrid()));">SOLVE</button><button OnClick="javascript: sudoku.clearGrid();">CLEAR</button>
 </section>
 <script type="text/javascript" src="sudoku.solver.js"></script>
