@@ -163,6 +163,12 @@
         return gridDigits;    
     };
     
+/*
+    sudoku.populateGridFromHash = function () {
+        return sudoku.populateGrid(eval("(" + global.document.location.hash.match(/^#\((.*?)\)/)[1] + ")"));
+    };
+*/
+    
     sudoku.clearGrid = function () {
         var i,
             nodeList = global.document.querySelectorAll('table#sudoku tr td input'),
