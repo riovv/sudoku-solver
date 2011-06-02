@@ -1,0 +1,10 @@
+Tests and benchmarks can be done by using the JavaScript console.
+Use the command: 
+sudoku.test.runTest(Object) where Object is {SQUARE: digit}
+
+or you can use one of the predeclared tests: 
+sudoku.test.runTest(sudoku.test.grids.easy.svd_1)
+
+You can also test an entire predeclared group by using:
+sudoku.test.runGroupTest(label) where label is one of the labels in sudoku.test.grids
+"sm" for example.
