@@ -23,11 +23,9 @@
         PEERS_LENGTH: 20       
     };
     
-
-   
-   
     sudoku.solver = {
         digits: {},
+        
         /*
          Eliminate all the other digits (except d) from digits[s] and propagate.
          Return digits, except return False if a contradiction is detected.
@@ -170,6 +168,7 @@
             nodeList[i].value = "";
         }
     };
+    
      
     /*
         A utility functions to clone an Object.
