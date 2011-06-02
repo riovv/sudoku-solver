@@ -143,7 +143,10 @@
             gridDigits = {},
             nodeList = global.document.querySelectorAll('table#sudoku tr td input'),
             nNodes = nodeList.length;
-            
+        
+        // Clear the grid first.
+        sudoku.clearGrid();    
+        
         for (i = 0; i < nNodes; i++) {
             if (digits.hasOwnProperty(nodeList[i].id) && digits[nodeList[i].id].length === 1) {
                 gridDigits[nodeList[i].id] = nodeList[i].value = digits[nodeList[i].id];
