@@ -155,7 +155,7 @@
             nNodes = nodeList.length;
             
         for (i = 0; i < nNodes; i++) {
-            if (digits[nodeList[i].id].length === 1) {
+            if (digits.hasOwnProperty(nodeList[i].id) && digits[nodeList[i].id].length === 1) {
                 gridDigits[nodeList[i].id] = nodeList[i].value = digits[nodeList[i].id];
             }
         }
