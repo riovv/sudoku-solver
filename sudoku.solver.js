@@ -22,6 +22,7 @@
         UNITS_LENGTH: 3,
         PEERS_LENGTH: 20       
     },
+        // Declaring the var, definition of cloneObject is in the bottom of this closure.
         cloneObject;
     
     sudoku.solver = {
@@ -128,8 +129,7 @@
     sudoku.solve = function (gridDigits) {
         // Get a new copy of the starting point.
         var s;
-        
-        sudoku.solver.digits = this.cloneObject(sudoku.DIGITS);
+        sudoku.solver.digits = cloneObject(sudoku.DIGITS);
         
         // Try to assign digits from the grid.
         for (s in gridDigits) {
@@ -196,7 +196,6 @@
         }
     };
     
-     
     /*
         A utility functions to clone an Object.
         Used by sudoku.solve() in order to clone the starting digits into 
