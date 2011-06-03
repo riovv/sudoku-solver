@@ -11,6 +11,18 @@ sudoku.test.runGroupTest(label) where label is one of the labels in sudoku.test.
 
 Best test results:
 ==============================
+Group Test: easy
+Browser: firefox 4
+Date: June 3, 2011 5:50PM
+==============================
+project_euler_1: [SOLVED] in 0.016s
+project_euler_2: [SOLVED] in 0.016s
+project_euler_3: [SOLVED] in 0.016s
+svd_1: [SOLVED] in 0.016s
+SUMMARY (total time: 0.064s)
+4 [SOLVED]
+
+==============================
 Group Test: SM 
 Browser: firefox 4
 Date: June 3, 2011 11:56PM
