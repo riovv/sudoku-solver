@@ -56,8 +56,9 @@ sudoku.test = {
     },
     
     runTest: function (gridDigits, label) {
-        var elapsed, gridDigits, 
+        var elapsed, gridDigits, digits,
             nSolvedSquares = 0,
+            possibleSolutions = 1,
             lable = label || "Unnamed",
             logString = "%c" + label + ": ",
             logStyle = "color: white; ";
@@ -66,7 +67,7 @@ sudoku.test = {
         sudoku.populateGrid(gridDigits);
         
         sudoku.test.timer.start("runTest");      
-        gridDigits = sudoku.solve(gridDigits);
+        digits = sudoku.solve(gridDigits);
         elapsed = sudoku.test.timer.stop("runTest");
         
         // Test was not able to finnish, invalid?
@@ -78,14 +79,29 @@ sudoku.test = {
             return false;
         }
         
+
         // Populate grid with the solved values.
-        gridDigits = sudoku.populateGrid(gridDigits);
+        gridDigits = sudoku.populateGrid(digits);
         
         // Log result
         nSolvedSquares = Object.keys(gridDigits).length;
-        logString += ((nSolvedSquares === 81) ? "[SOLVED]" : "[FAILED] " + nSolvedSquares + "/81") + " in " + elapsed + "s";
+        logString += ((nSolvedSquares === 81) ? "[SOLVED]" : "[FAILED] " + nSolvedSquares + "/81") + " in " + elapsed + "s ";
         logStyle += "background-color: " + ((nSolvedSquares === 81) ? "green" : "orange");
+        
+        // If it was unsuccessful, calculate the number of possible solutions left.
+        if (nSolvedSquares !== 81) {
+            for (s in digits) {
+                if (digits.hasOwnProperty(s)) {
+                    if (digits[s].length > 1) {
+                        possibleSolutions *= digits[s].length;
+                    }
+                }
+            }
+            logString += "with " + possibleSolutions + " possible solutions left";
+        }
+        
         console.log(logString, logStyle);
+        
         
         return {squares: nSolvedSquares, time: elapsed};
     },
