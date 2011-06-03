@@ -67,8 +67,11 @@
                 }
             }
            
-            // Check Single Candidate, and assign if found.
+            // Check single candidate, and assign if found.
             sudoku.solver.assignSingleCandidate(digits, square, digit);
+            
+            // Check candidate lines, and eliminate if found.
+            sudoku.solver.eliminateCandidateLines(digits, square, digit);
             
             return digits;
         },
@@ -121,6 +124,65 @@
                 }
             }
         
+            return digits;
+        },
+        /*
+            After a digit has been eliminated, there is a chance that inside that square's
+            box unit, all possible squares for the digit ar in line horizontically or vertically.
+            Even if it is impossible to know exactly where to assign the digit, we can eliminate the digit from
+            all other squares in the horizontal/vertical unit of those squares.
+            Example: http://www.palmsudoku.com/pages/techniques-3.php
+        */
+        eliminateCandidateLines: function (digits, square, digit) {
+            var i, s, direction, unit,
+                boxUnit = sudoku.UNITS[square][2],
+                possibleSquares = {horizontal: [], vertical: []},
+                possibleLines = {horizontal: [], vertical: []};
+            
+            
+            // Determine the possible lines for this digit.
+            for (i = 0; i < 3; i++) {
+                possibleSquares = {horizontal: [], vertical: []};
+                
+                // Horizontal lines.
+                for (j = 0; j < 3; j++) {
+                    if (digits[boxUnit[i+j]].indexOf(digit) !== -1) {
+                        possibleSquares.horizontal.push(boxUnit[i+j]);
+                    }
+                }
+                
+                if (possibleSquares.horizontal.length > 0) {
+                    possibleLines.horizontal.push(possibleSquares.horizontal);
+                } 
+                
+                // Vertical lines.
+                for (j = 0; j < 9; j += 3) {
+                    if (digits[boxUnit[i+j]].indexOf(digit) !== -1) {
+                        possibleSquares.vertical.push(boxUnit[i+j]);
+                    }
+                }
+                
+                if (possibleSquares.vertical.length > 0) {
+                    possibleLines.vertical.push(possibleSquares.vertical);
+                }
+            }
+            
+            /* 
+                The digit only has one possible line.
+                It can safely be eliminated from all other squares that
+                are in line and outside this box unit.
+            */
+            direction = (possibleLines.horizontal.length === 1) ? "horizontal" : (possibleLines.vertical.length === 1) ? "vertical" : false;
+            
+            if (direction && possibleLines[direction][0].length > 1) {
+                unit = (direction === "horizontal") ? sudoku.UNITS[possibleLines.horizontal[0][0]][1] : sudoku.UNITS[possibleLines.vertical[0][0]][0];
+                for (s in unit) {
+                    if (unit.hasOwnProperty(s) && possibleLines[direction][0].indexOf(unit[s]) === -1) {
+                        sudoku.solver.eliminate(digits, unit[s], digit);
+                    }
+                }            
+            }
+
             return digits;
         }
        
@@ -217,4 +279,4 @@
     global.sudoku = sudoku;
     return global.sudoku;
    
-}(typeof window === 'undefined' ? this : window));
+}(typeof window === 'undefined' ? this : window)); 
