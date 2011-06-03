@@ -134,7 +134,7 @@
             Example: http://www.palmsudoku.com/pages/techniques-3.php
         */
         eliminateCandidateLines: function (digits, square, digit) {
-            var i, s, direction, unit,
+            var i, j, s, direction, unit,
                 boxUnit = sudoku.UNITS[square][2],
                 possibleSquares = {horizontal: [], vertical: []},
                 possibleLines = {horizontal: [], vertical: []};
@@ -146,8 +146,8 @@
                 
                 // Horizontal lines.
                 for (j = 0; j < 3; j++) {
-                    if (digits[boxUnit[i+j]].indexOf(digit) !== -1) {
-                        possibleSquares.horizontal.push(boxUnit[i+j]);
+                    if (digits[boxUnit[i + j]].indexOf(digit) !== -1) {
+                        possibleSquares.horizontal.push(boxUnit[i + j]);
                     }
                 }
                 
@@ -157,8 +157,8 @@
                 
                 // Vertical lines.
                 for (j = 0; j < 9; j += 3) {
-                    if (digits[boxUnit[i+j]].indexOf(digit) !== -1) {
-                        possibleSquares.vertical.push(boxUnit[i+j]);
+                    if (digits[boxUnit[i + j]].indexOf(digit) !== -1) {
+                        possibleSquares.vertical.push(boxUnit[i + j]);
                     }
                 }
                 
