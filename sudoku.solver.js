@@ -21,7 +21,8 @@
         SQUARES_LENGTH: 81,
         UNITS_LENGTH: 3,
         PEERS_LENGTH: 20       
-    };
+    },
+        cloneObject;
     
     sudoku.solver = {
         digits: {},
@@ -46,7 +47,7 @@
         },
        
         eliminate: function (digits, square, digit) {
-            var i, s, result, possible;               
+            var result;               
             //  Value has already been eliminated.
             if (digits[square].indexOf(digit) === -1) {
                 return digits;
@@ -59,24 +60,46 @@
             if (digits[square].length === 0) {
                 return false;
             } else if (digits[square].length === 1) {
-                /*
-                    If a square's possibilities is reduced to only one digit,
-                    then eliminate that digit from all of it peer's.
-                */
-                for (s in sudoku.PEERS[square]) {
-                    if (sudoku.PEERS[square].hasOwnProperty(s)) {
-                        result = sudoku.solver.eliminate(digits, sudoku.PEERS[square][s], digits[square]);
-                        if (!result) {
-                            return false;
-                        }
-                    }
+                result = sudoku.solver.eliminatePeers(digits, square, digits[square]);
+                if (!result) {
+                    return false;
                 }
             }
            
-            /*
-                If digit has been removed, check if theres only one 
-                square in its' units that the digit possibly can be assigned.
-            */
+            // Check Single Candidate, and assign if found.
+            sudoku.solver.assignSingleCandidate(digits, square, digit);
+            
+            return digits;
+        },
+        
+        /*
+            Eliminate a digit from all of the square's peers.
+            If a square has been assigned a digit, that digit can not 
+            exist in any of its' peers.
+        */   
+        eliminatePeers: function (digits, square, digit) {
+            var s, result;
+            
+            for (s in sudoku.PEERS[square]) {
+                if (sudoku.PEERS[square].hasOwnProperty(s)) {
+                    result = sudoku.solver.eliminate(digits, sudoku.PEERS[square][s], digit);
+                    if (!result) {
+                        return false;
+                    }
+                }
+            }
+            
+            return digits;        
+        },
+        
+        /*
+            After a digit has been eliminated, there is a chance that
+            in the eliminated square's units, there is only a single square
+            that the digit can be assigned.
+        */        
+        assignSingleCandidate: function (digits, square, digit) {
+            var i, s, result, possible;
+
             for (i = 0; i < sudoku.UNITS_LENGTH; i++) {
                 possible = [];
                 for (s in sudoku.UNITS[square][i]) {
@@ -96,7 +119,7 @@
                     }
                 }
             }
-            
+        
             return digits;
         }
        
@@ -105,7 +128,8 @@
     sudoku.solve = function (gridDigits) {
         // Get a new copy of the starting point.
         var s;
-        sudoku.solver.digits = cloneObject(sudoku.DIGITS);
+        
+        sudoku.solver.digits = this.cloneObject(sudoku.DIGITS);
         
         // Try to assign digits from the grid.
         for (s in gridDigits) {
@@ -178,9 +202,10 @@
         Used by sudoku.solve() in order to clone the starting digits into 
         a new instance.
     */
-    var cloneObject = function (obj) {
+    cloneObject = function (obj) {
         var i,
-        target = {};
+            target = {};
+            
         for (i in obj) {
             if (obj.hasOwnProperty(i)) {
                 target[i] = obj[i];
