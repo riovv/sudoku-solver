@@ -8,3 +8,20 @@ sudoku.test.runTest(sudoku.test.grids.easy.svd_1)
 You can also test an entire predeclared group by using:
 sudoku.test.runGroupTest(label) where label is one of the labels in sudoku.test.grids
 "sm" for example.
+
+Best test results:
+==============================
+Group Test: SM 
+Browser: firefox 4
+Date: June 3, 2011 11:56PM
+==============================
+SM_1: [FAILED] 38/81 in 0.017s with 73953703558014570000 possible solutions left
+SM_2: [FAILED] 23/81 in 0.013s with 4.141407399248816e+34 possible solutions left
+SM_3: [FAILED] 20/81 in 0.013s with 1.2254195146595347e+36 possible solutions left
+SM_4: [FAILED] 40/81 in 0.016s with 6499837226778624000 possible solutions left
+SM_5: [FAILED] 45/81 in 0.017s with 3611020681543680 possible solutions left
+SM_6: [FAILED] 31/81 in 0.014s with 4.108539086556365e+26 possible solutions left
+SM_7: [FAILED] 43/81 in 0.016s with 577763309046988800 possible solutions left
+SM_8: [FAILED] 43/81 in 0.016s with 277326388342554620 possible solutions left
+SUMMARY (total time: 0.122s)
+8 [FAILED]
