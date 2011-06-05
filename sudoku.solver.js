@@ -59,12 +59,18 @@
                 // Create a clone to compare and see if something changed during this iteration.
                 sudoku.solver.previousDigits = cloneObject(sudoku.solver.digits);
                 
-                // Check naked pairs/triples/quads, and eliminated if found.
+                // Check naked pairs/triples/quads, and eliminate if found.
                 if (!sudoku.solver.eliminateNaked(sudoku.solver.digits)) {
                     return false;
                 }
                   
+                // Check candidate lines, and eliminate if found.
                 if (!sudoku.solver.eliminateCandidateLines(sudoku.solver.digits)) {
+                    return false;
+                }
+                
+                // Check single candidate, and assign if found.
+                if (!sudoku.solver.assignSingleCandidate(sudoku.solver.digits)) {
                     return false;
                 }
                         
@@ -108,9 +114,6 @@
                     return false;
                 }
             }
-           
-            // Check single candidate, and assign if found.
-            sudoku.solver.assignSingleCandidate(digits, square, digit);
             
             return digits;
         },
@@ -135,29 +138,32 @@
         },
         
         /*
-            After a digit has been eliminated, there is a chance that
-            in the eliminated square's units, there is only a single square
-            that the digit can be assigned.
-        */        
-        assignSingleCandidate: function (digits, square, digit) {
-            var i, s, possible;
-
-            for (i = 0; i < sudoku.UNITS_LENGTH; i++) {
-                possible = [];
-                for (s in sudoku.UNITS[square][i]) {
-                    if (sudoku.UNITS[square][i].hasOwnProperty(s)) {
-                        if (digits[sudoku.UNITS[square][i][s]].indexOf(digit) !== -1) {
-                            possible.push(sudoku.UNITS[square][i][s]);
+            In a unit, if a digit can only be assigned in one square.
+            Then assign it there.
+        */
+        assignSingleCandidate: function (digits) {
+            var u, s, possible, unit, digit;
+            
+            for (u = 0; u < sudoku.ALL_UNITS_LENGTH; u++) {
+                unit = sudoku.ALL_UNITS[u];
+                
+                for (digit = 1; digit < 10; digit++) {
+                    possible = [];
+                    for (s in unit) {
+                        if (unit.hasOwnProperty(s)) {
+                            if (digits[unit[s]].indexOf(digit) !== -1) {
+                                possible.push(unit[s]);
+                            }
                         }
                     }
-                }
-                // Invalid input?
-                if (possible.length === 0) {
-                    return false;
-                } else if (possible.length === 1 && possible[0] !== square) {
-                    if (!sudoku.solver.assign(digits, possible[0], digit)) {
+                    // Invalid input?
+                    if (possible.length === 0) {
                         return false;
-                    }
+                    } else if (possible.length === 1 && digits[possible[0]] > 1) {
+                        if (!sudoku.solver.assign(digits, possible[0], digit)) {
+                            return false;
+                        }
+                    }                
                 }
             }
         
@@ -165,8 +171,7 @@
         },
         
         /*
-            After a digit has been eliminated, there is a chance that inside that square's
-            box unit, all possible squares for the digit ar in line horizontically or vertically.
+            Inside a square if all possible squares for a digit are in line horizontically or vertically.
             Even if it is impossible to know exactly where to assign the digit, we can eliminate the digit from
             all other squares in the horizontal/vertical unit of those squares.
             
