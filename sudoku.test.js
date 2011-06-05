@@ -67,7 +67,7 @@ sudoku.test = {
         sudoku.populateGrid(gridDigits);
         
         sudoku.test.timer.start("runTest");      
-        digits = sudoku.solve(gridDigits);
+        digits = sudoku.solver.run(gridDigits);
         elapsed = sudoku.test.timer.stop("runTest");
         
         // Test was not able to finnish, invalid?
