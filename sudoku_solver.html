@@ -148,7 +148,7 @@
 			<td><input id="I9" size="1" maxlength="1" type="text"></td>
 		</tr>	
 	</tbody></table>
-	<button id="solve" OnClick="javascript: sudoku.populateGrid(sudoku.solve(sudoku.parseGrid()));">SOLVE</button><button OnClick="javascript: sudoku.clearGrid();">CLEAR</button>
+	<button id="solve" OnClick="javascript: sudoku.populateGrid(sudoku.solver.run(sudoku.parseGrid()));">SOLVE</button><button OnClick="javascript: sudoku.clearGrid();">CLEAR</button>
 </section>
 <script type="text/javascript" src="sudoku.solver.js"></script>
 <script type="text/javascript" src="sudoku.test.js"></script>
