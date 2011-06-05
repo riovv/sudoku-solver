@@ -266,7 +266,7 @@
                         }
                         
                         // A valid naked pair/triple/quad group has beeen found in this unit.
-                        if (nakeds.length === digits[unit[s]].length && sudoku.solver.alreadyEliminatedNakeds.indexOf(nakeds.toString()) === -1) {
+                        if (nakeds.length === digits[unit[s]].length && sudoku.solver.alreadyEliminatedNakeds.indexOf(nakeds.sort().toString()) === -1) {
                             // Eliminate all digits within the naked group from every square outside the naked group in this unit.
                             for (t in unit) {
                                 if (unit.hasOwnProperty(t) && nakeds.indexOf(unit[t]) === -1) {
@@ -279,7 +279,7 @@
                                     }
                                 }
                             }
-                            sudoku.solver.alreadyEliminatedNakeds.push(nakeds.toString());
+                            sudoku.solver.alreadyEliminatedNakeds.push(nakeds.sort().toString());
                         }
                         
                     }
