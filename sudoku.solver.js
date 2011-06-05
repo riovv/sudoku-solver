@@ -37,15 +37,14 @@
             Main method that runs the solving part
         */
         run: function (gridDigits) {
-            var s, result;
+            var s;
             sudoku.solver.digits = cloneObject(sudoku.DIGITS);
             sudoku.solver.alreadyEliminatedNakeds = [];
             
             // Assign digits from the grid.
             for (s in gridDigits) {
                 if (gridDigits.hasOwnProperty(s)) {
-                    result = sudoku.solver.assign(sudoku.solver.digits, s, gridDigits[s]);
-                    if (!result) {
+                    if (!sudoku.solver.assign(sudoku.solver.digits, s, gridDigits[s])) {
                         return false;
                     }            
                 }
@@ -61,13 +60,11 @@
                 sudoku.solver.previousDigits = cloneObject(sudoku.solver.digits);
                 
                 // Check naked pairs/triples/quads, and eliminated if found.
-                result = sudoku.solver.eliminateNaked(sudoku.solver.digits);
-                if (!result) {
+                if (!sudoku.solver.eliminateNaked(sudoku.solver.digits)) {
                     return false;
                 }
-                
-                result = sudoku.solver.eliminateCandidateLines(sudoku.solver.digits);  
-                if (!result) {
+                  
+                if (!sudoku.solver.eliminateCandidateLines(sudoku.solver.digits)) {
                     return false;
                 }
                         
@@ -81,13 +78,12 @@
             Return digits, except return False if a contradiction is detected.
         */
         assign: function (digits, square, digit) {
-            var i, result,
+            var i,
                 otherDigits = digits[square].replace(digit, ""),
                 nOtherDigits = otherDigits.length;
                                
             for (i = 0; i < nOtherDigits; i++) {
-                result = sudoku.solver.eliminate(digits, square, otherDigits[i]);
-                if (!result) {
+                if (!sudoku.solver.eliminate(digits, square, otherDigits[i])) {
                     return false;
                 }
             }
@@ -96,7 +92,6 @@
         },
        
         eliminate: function (digits, square, digit) {
-            var result;               
             //  Value has already been eliminated.
             if (digits[square].indexOf(digit) === -1) {
                 return digits;
@@ -109,8 +104,7 @@
             if (digits[square].length === 0) {
                 return false;
             } else if (digits[square].length === 1) {
-                result = sudoku.solver.eliminatePeers(digits, square, digits[square]);
-                if (!result) {
+                if (!sudoku.solver.eliminatePeers(digits, square, digits[square])) {
                     return false;
                 }
             }
@@ -127,12 +121,11 @@
             exist in any of its' peers.
         */   
         eliminatePeers: function (digits, square, digit) {
-            var s, result;
+            var s;
             
             for (s in sudoku.PEERS[square]) {
                 if (sudoku.PEERS[square].hasOwnProperty(s)) {
-                    result = sudoku.solver.eliminate(digits, sudoku.PEERS[square][s], digit);
-                    if (!result) {
+                    if (!sudoku.solver.eliminate(digits, sudoku.PEERS[square][s], digit)) {
                         return false;
                     }
                 }
@@ -147,7 +140,7 @@
             that the digit can be assigned.
         */        
         assignSingleCandidate: function (digits, square, digit) {
-            var i, s, result, possible;
+            var i, s, possible;
 
             for (i = 0; i < sudoku.UNITS_LENGTH; i++) {
                 possible = [];
@@ -162,8 +155,7 @@
                 if (possible.length === 0) {
                     return false;
                 } else if (possible.length === 1 && possible[0] !== square) {
-                    result = sudoku.solver.assign(digits, possible[0], digit);
-                    if (!result) {
+                    if (!sudoku.solver.assign(digits, possible[0], digit)) {
                         return false;
                     }
                 }
@@ -181,7 +173,7 @@
             Example: http://www.palmsudoku.com/pages/techniques-3.php
         */
         eliminateCandidateLines: function (digits) {
-            var u, digit, i, j, s, boxUnit, result, direction, unit,
+            var u, digit, i, j, s, boxUnit, direction, unit,
                 possibleSquares = {horizontal: [], vertical: []},
                 possibleLines = {horizontal: [], vertical: []};
                 
@@ -230,8 +222,7 @@
                         unit = (direction === "horizontal") ? sudoku.UNITS[possibleLines.horizontal[0][0]][1] : sudoku.UNITS[possibleLines.vertical[0][0]][0];
                         for (s in unit) {
                             if (unit.hasOwnProperty(s) && possibleLines[direction][0].indexOf(unit[s]) === -1) {
-                                result = sudoku.solver.eliminate(digits, unit[s], digit);
-                                if (!result) {
+                                if (!sudoku.solver.eliminate(digits, unit[s], digit)) {
                                     return false;
                                 }
                             }
@@ -254,7 +245,7 @@
             http://www.palmsudoku.com/pages/techniques-6.php   
         */
         eliminateNaked: function (digits) {
-            var u, s, t, d, unit, result,
+            var u, s, t, d, unit,
                 nakeds = [];
             for (u = 0; u < sudoku.ALL_UNITS_LENGTH; u++) {
                 unit = sudoku.ALL_UNITS[u];
@@ -276,8 +267,7 @@
                                 if (unit.hasOwnProperty(t) && nakeds.indexOf(unit[t]) === -1) {
                                     for (d in digits[unit[s]]) {
                                         if (digits[unit[s]].hasOwnProperty(d)) {
-                                            result = sudoku.solver.eliminate(digits, unit[t], digits[unit[s]][d]);
-                                            if (!result) {
+                                            if (!sudoku.solver.eliminate(digits, unit[t], digits[unit[s]][d])) {
                                                 return false;
                                             }
                                         }
