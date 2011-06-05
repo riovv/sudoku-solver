@@ -58,6 +58,11 @@
             do {
                 // Create a clone to compare and see if something changed during this iteration.
                 sudoku.solver.previousDigits = cloneObject(sudoku.solver.digits);
+
+                // Check single candidate, and assign if found.
+                if (!sudoku.solver.assignSingleCandidate(sudoku.solver.digits)) {
+                    return false;
+                }
                 
                 // Check naked pairs/triples/quads, and eliminate if found.
                 if (!sudoku.solver.eliminateNaked(sudoku.solver.digits)) {
@@ -67,13 +72,8 @@
                 // Check candidate lines, and eliminate if found.
                 if (!sudoku.solver.eliminateCandidateLines(sudoku.solver.digits)) {
                     return false;
-                }
+                }      
                 
-                // Check single candidate, and assign if found.
-                if (!sudoku.solver.assignSingleCandidate(sudoku.solver.digits)) {
-                    return false;
-                }
-                        
             } while (!compareObject(sudoku.solver.previousDigits, sudoku.solver.digits));
             
             return sudoku.solver.digits;
