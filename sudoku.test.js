@@ -84,7 +84,12 @@ sudoku.test = {
         gridDigits = sudoku.populateGrid(digits);
         
         // Log result
-        nSolvedSquares = Object.keys(gridDigits).length;
+		for (s in gridDigits) {
+			if (gridDigits.hasOwnProperty(s)){
+				nSolvedSquares++;
+			}
+		}
+		
         logString += ((nSolvedSquares === 81) ? "[SOLVED]" : "[FAILED] " + nSolvedSquares + "/81") + " in " + elapsed + "s ";
         logStyle += "background-color: " + ((nSolvedSquares === 81) ? "green" : "orange");
         
