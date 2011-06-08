@@ -30,8 +30,8 @@
     sudoku.solver = {
         // Working copy of sudoku.DIGITS
         digits: {},
-        // To keep track on which naked pairs/triples/quads that has already been run.
-        alreadyEliminatedNakeds: [],
+        // To keep track on which naked and hidden pairs/triples/quads that has already been run.
+        alreadyEliminated: {naked: [], hidden: []},
         
         /* 
             Main method that runs the solving part
@@ -63,17 +63,16 @@
                 if (!sudoku.solver.assignSingleCandidate(sudoku.solver.digits)) {
                     return false;
                 }
+
+                // Check candidate lines, and eliminate if found.
+                if (!sudoku.solver.eliminateCandidateLines(sudoku.solver.digits)) {
+                    return false;
+                }
                 
                 // Check naked pairs/triples/quads, and eliminate if found.
                 if (!sudoku.solver.eliminateNaked(sudoku.solver.digits)) {
                     return false;
-                }
-                  
-                // Check candidate lines, and eliminate if found.
-                if (!sudoku.solver.eliminateCandidateLines(sudoku.solver.digits)) {
-                    return false;
-                }      
-                
+                } 
             } while (!compareObject(sudoku.solver.previousDigits, sudoku.solver.digits));
             
             return sudoku.solver.digits;
@@ -240,36 +239,37 @@
             return digits;
         },
         
-        
-          
         /*
             A group of digits (2,3,4) in a unit might only be able to be assigned to 2,3 or 4 squares.
             It is unknown where each digit should be assigned, but it is certain that these digits
             must be placed in these squares. Therefor they can be eliminated from all others in that unit.       
             
             http://www.palmsudoku.com/pages/techniques-6.php   
+            
+            TODO: This method has to be rewritten to find nakeds when theres not a superset. Triple: {2,4} {4,6} {6,2}
         */
         eliminateNaked: function (digits) {
             var u, s, t, d, unit,
-                nakeds = [];
+                naked = [];
+                
             for (u = 0; u < sudoku.ALL_UNITS_LENGTH; u++) {
                 unit = sudoku.ALL_UNITS[u];
                 for (s in unit) {
                     if (unit.hasOwnProperty(s) && digits[unit[s]].length > 1 && digits[unit[s]].length < 5) { 
                     
                         // Find naked pairs/triples/quads.
-                        nakeds = [unit[s]];
+                        naked = [unit[s]];
                         for (t in unit) {
                             if (unit.hasOwnProperty(t) && t !== s && digits[unit[t]].length > 1 && digits[unit[s]].match(digits[unit[t]]) !== null) {
-                                nakeds.push(unit[t]);
+                                naked.push(unit[t]);
                             }
                         }
                         
                         // A valid naked pair/triple/quad group has beeen found in this unit.
-                        if (nakeds.length === digits[unit[s]].length && sudoku.solver.alreadyEliminatedNakeds.indexOf(nakeds.sort().toString()) === -1) {
+                        if (naked.length === digits[unit[s]].length && sudoku.solver.alreadyEliminated.naked.indexOf(naked.sort().toString()) === -1) {
                             // Eliminate all digits within the naked group from every square outside the naked group in this unit.
                             for (t in unit) {
-                                if (unit.hasOwnProperty(t) && nakeds.indexOf(unit[t]) === -1) {
+                                if (unit.hasOwnProperty(t) && naked.indexOf(unit[t]) === -1) {
                                     for (d in digits[unit[s]]) {
                                         if (digits[unit[s]].hasOwnProperty(d)) {
                                             if (!sudoku.solver.eliminate(digits, unit[t], digits[unit[s]][d])) {
@@ -279,7 +279,7 @@
                                     }
                                 }
                             }
-                            sudoku.solver.alreadyEliminatedNakeds.push(nakeds.sort().toString());
+                            sudoku.solver.alreadyEliminated.naked.push(naked.sort().toString());
                         }
                         
                     }
@@ -287,9 +287,8 @@
             }
             
             return digits;
-        }
+        },
         
-       
     };
 
     sudoku.parseGrid = function () {
