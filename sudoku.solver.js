@@ -86,7 +86,7 @@
         */
         assign: function (digits, square, digit) {
             var otherDigits = digits[square].replace(digit, "");
-                                            
+            
             if (!sudoku.solver.eliminateMultiple(digits, [square], otherDigits)) {
                 return false;
             }
@@ -111,7 +111,7 @@
                     Eliminate a digit from all of the square's peers.
                     If a square has been assigned a digit, that digit can not 
                     exist in any of its' peers.
-                */   
+                */
                 if (!sudoku.solver.eliminateMultiple(digits, sudoku.PEERS[square], digits[square])) {
                     return false;
                 }    
@@ -265,14 +265,15 @@
             TODO: This method has to be rewritten to find nakeds when theres not a superset. Triple: {2,4} {4,6} {6,2}
         */
         eliminateNaked: function (digits) {
-            var i, j, /* k, x, */
+            var i, j, k, m, unit,
                 unassigned = [],
                 unassignedLen = 0,
                 union = [],
                 notNaked = [];
                 
-                
-            each(sudoku.ALL_UNITS, function (unit) {
+            for (u = 0; u < sudoku.ALL_UNITS_LENGTH; u++) {
+                unit = sudoku.ALL_UNITS[u];
+            
                 /* 
                     Create a temp unit without the squares that have not yet been assigned a digit.
                     Squares with digits already assigned are irrelevant for this method.
@@ -289,27 +290,80 @@
                 // Check for pairs.
                 for (i = 0; i < unassignedLen - 1; i++) {
                     for (j = i + 1; j < unassignedLen; j++) {
+                    
                         union = unionArray(digits[unassigned[i]], digits[unassigned[j]]);
                         if (union.length === 2) {
                             // Eliminate digits from all other squares in unit.    
                             notNaked = unassigned.slice();
                             notNaked.splice(j, 1);
                             notNaked.splice(i, 1); 
-
+                            
                             if (!sudoku.solver.eliminateMultiple(digits, notNaked, union)) {
                                 return false;
                             }
                         }
+                        
                     }
                 }
                 
                 // TODO: Check for triples.
-                // TODO: Check for quads.
+                for (i = 0; i < unassignedLen - 2; i++) {
+                    for (j = i + 1; j < unassignedLen - 1; j++) {
+                        for (k = j + 1; k < unassignedLen; k++) {
+                        
+                            union = unionArray(digits[unassigned[i]], digits[unassigned[j]]);
+                            union = unionArray(union, digits[unassigned[k]]);
+                            
+                            if (union.length === 3) {
+                                // Eliminate digits from all other squares in unit.    
+                                notNaked = unassigned.slice();
+                                notNaked.splice(k, 1);
+                                notNaked.splice(j, 1);
+                                notNaked.splice(i, 1); 
+                                
+                                if (!sudoku.solver.eliminateMultiple(digits, notNaked, union)) {
+                                    return false;
+                                }
+                            }
+                        
+                        }
+                    }
+                }
                 
-            });
+                
+                // TODO: Check for quads.
+                for (i = 0; i < unassignedLen - 3; i++) {
+                    for (j = i + 1; j < unassignedLen - 2; j++) {
+                        for (k = j + 1; k < unassignedLen - 1; k++) {
+                            for (m = k + 1; m < unassignedLen; m++) {
+                            
+                                union = unionArray(digits[unassigned[i]], digits[unassigned[j]]);
+                                union = unionArray(union, digits[unassigned[k]]);
+                                union = unionArray(union, digits[unassigned[m]]);
+                                
+                                if (union.length === 4) {
+                                    // Eliminate digits from all other squares in unit.    
+                                    notNaked = unassigned.slice();
+                                    notNaked.splice(m, 1);
+                                    notNaked.splice(k, 1);
+                                    notNaked.splice(j, 1);
+                                    notNaked.splice(i, 1); 
+                                    
+                                    if (!sudoku.solver.eliminateMultiple(digits, notNaked, union)) {
+                                        return false;
+                                    }
+                                }
+                                
+                            }                    
+                        }
+                    }
+                }
+                
+            }
 
             return digits;
-        }        
+        }
+                
     };
 
     sudoku.parseGrid = function () {
@@ -430,7 +484,7 @@
     
     /*
         Merges two arrays together by their shared values.
-        for example: [1, 2, 3] and [1, 2, 4, 5] becomes [1, 2]
+        for example: [1, 2, 3] and [1, 2, 4, 5] becomes [1, 2, 3, 4, 5]
     */
     unionArray = function (a, b) {
         var union = [];
