@@ -1,4 +1,4 @@
-/*jslint white: true, devel: true, onevar: true, browser: true, undef: true, nomen: true, regexp: true, continue: true, windows: true, newcap: true, maxerr: 50, indent: 4 */
+/*jslint devel: true, browser: true, sloppy: true, windows: true, plusplus: true, maxerr: 50, indent: 4 */
 (function (global) {
 
     /*
@@ -6,7 +6,7 @@
         With CONSTANTS defining sudoku relationships.
     */
     var sudoku = {
-        VERSION: "0.5",
+        EDITION: "2011-06-09",
 
         SQUARES: ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8", "E9", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "H1", "H2", "H3", "H4", "H5", "H6", "H7", "H8", "H9", "I1", "I2", "I3", "I4", "I5", "I6", "I7", "I8", "I9"],
 
@@ -25,7 +25,9 @@
     },
         // Declaring the var, definition of cloneObject/compareObject is in the bottom of this closure.
         cloneObject,
-        compareObject;
+        compareObject,
+        each,
+        unionArray;
     
     sudoku.solver = {
         // Working copy of sudoku.DIGITS
@@ -83,16 +85,12 @@
             Return digits, except return False if a contradiction is detected.
         */
         assign: function (digits, square, digit) {
-            var i,
-                otherDigits = digits[square].replace(digit, ""),
-                nOtherDigits = otherDigits.length;
-                               
-            for (i = 0; i < nOtherDigits; i++) {
-                if (!sudoku.solver.eliminate(digits, square, otherDigits[i])) {
-                    return false;
-                }
+            var otherDigits = digits[square].replace(digit, "");
+                                            
+            if (!sudoku.solver.eliminateMultiple(digits, [square], otherDigits)) {
+                return false;
             }
-            
+
             return digits;
         },
        
@@ -109,8 +107,33 @@
             if (digits[square].length === 0) {
                 return false;
             } else if (digits[square].length === 1) {
-                if (!sudoku.solver.eliminatePeers(digits, square, digits[square])) {
+                /*
+                    Eliminate a digit from all of the square's peers.
+                    If a square has been assigned a digit, that digit can not 
+                    exist in any of its' peers.
+                */   
+                if (!sudoku.solver.eliminateMultiple(digits, sudoku.PEERS[square], digits[square])) {
                     return false;
+                }    
+            }
+            
+            return digits;
+        },
+        
+        /*
+            A shorthand function of eliminating multiple digits from multiple squares.
+            Where square and digit in this case are both 0 indexed arrays of n values. (also work on string of digits)
+        */
+        eliminateMultiple: function (digits, square, digit) {
+            var d, s,
+                sLen = square.length,
+                dLen = digit.length;
+            
+            for (d = 0; d < dLen; d++) {
+                for (s = 0; s < sLen; s++) {
+                    if (!sudoku.solver.eliminate(digits, square[s], digit[d])) {
+                        return false;
+                    }
                 }
             }
             
@@ -118,27 +141,10 @@
         },
         
         /*
-            Eliminate a digit from all of the square's peers.
-            If a square has been assigned a digit, that digit can not 
-            exist in any of its' peers.
-        */   
-        eliminatePeers: function (digits, square, digit) {
-            var s;
-            
-            for (s in sudoku.PEERS[square]) {
-                if (sudoku.PEERS[square].hasOwnProperty(s)) {
-                    if (!sudoku.solver.eliminate(digits, sudoku.PEERS[square][s], digit)) {
-                        return false;
-                    }
-                }
-            }
-            
-            return digits;        
-        },
-        
-        /*
             In a unit, if a digit only has one possible square to
             which it can be assigned. Then assign it there.
+            
+            TODO: Make sure this does not run more than once per combination.
         */
         assignSingleCandidate: function (digits) {
             var u, s, possible, unit, digit;
@@ -177,7 +183,7 @@
             Example: http://www.palmsudoku.com/pages/techniques-3.php
         */
         eliminateCandidateLines: function (digits) {
-            var u, digit, i, j, s, boxUnit, direction, unit,
+            var u, digit, i, j, s, boxUnit, direction, unit, possibleLine, possibleLineLen,
                 possibleSquares = {horizontal: [], vertical: []},
                 possibleLines = {horizontal: [], vertical: []};
                 
@@ -220,20 +226,30 @@
                         It can safely be eliminated from all other squares that
                         are in line and outside this box unit.
                     */
-                    direction = (possibleLines.horizontal.length === 1) ? "horizontal" : (possibleLines.vertical.length === 1) ? "vertical" : "";
                     
-                    if (direction && possibleLines[direction][0].length > 1) {
-                        unit = (direction === "horizontal") ? sudoku.UNITS[possibleLines.horizontal[0][0]][1] : sudoku.UNITS[possibleLines.vertical[0][0]][0];
-                        for (s in unit) {
-                            if (unit.hasOwnProperty(s) && possibleLines[direction][0].indexOf(unit[s]) === -1) {
-                                if (!sudoku.solver.eliminate(digits, unit[s], digit)) {
-                                    return false;
-                                }
-                            }
-                        }            
+                    // Determine direction, there can never be a candidate line in both directions.
+                    direction = (possibleLines.horizontal.length === 1 && possibleLines.horizontal[0].length > 1) ? "horizontal" :
+                        (possibleLines.vertical.length === 1 && possibleLines.vertical[0].length > 1) ? "vertical" : "";
+                    
+                    if (direction) {
+                        possibleLine = possibleLines[direction][0];
+                        possibleLineLen = possibleLine.length;
+                     
+                        // Get a copy of the unit to eliminate digit from
+                        unit = (direction === "horizontal") ? sudoku.UNITS[possibleLine[0]][1].slice() : sudoku.UNITS[possibleLine[0]][0].slice();
+
+                        // Remove the squares that form the line from the copy.
+                        for (s = 0; s < possibleLineLen; s++) {
+                            unit.splice(unit.indexOf(possibleLine[s]), 1);
+                        }
+                        
+                        // Eliminate the digit from all other squares that are in line with these in other box units.
+                        if (!sudoku.solver.eliminateMultiple(digits, unit, [digit])) {
+                            return false;
+                        }
                     }
-                }
                     
+                }
             }
             
             return digits;
@@ -249,46 +265,51 @@
             TODO: This method has to be rewritten to find nakeds when theres not a superset. Triple: {2,4} {4,6} {6,2}
         */
         eliminateNaked: function (digits) {
-            var u, s, t, d, unit,
-                naked = [];
+            var i, j, /* k, x, */
+                unassigned = [],
+                unassignedLen = 0,
+                union = [],
+                notNaked = [];
                 
-            for (u = 0; u < sudoku.ALL_UNITS_LENGTH; u++) {
-                unit = sudoku.ALL_UNITS[u];
-                for (s in unit) {
-                    if (unit.hasOwnProperty(s) && digits[unit[s]].length > 1 && digits[unit[s]].length < 5) { 
-                    
-                        // Find naked pairs/triples/quads.
-                        naked = [unit[s]];
-                        for (t in unit) {
-                            if (unit.hasOwnProperty(t) && t !== s && digits[unit[t]].length > 1 && digits[unit[s]].match(digits[unit[t]]) !== null) {
-                                naked.push(unit[t]);
+                
+            each(sudoku.ALL_UNITS, function (unit) {
+                /* 
+                    Create a temp unit without the squares that have not yet been assigned a digit.
+                    Squares with digits already assigned are irrelevant for this method.
+                */       
+                unassigned = [];    
+                each(unit, function (square) {
+                    if (digits[square].length > 1) {
+                        unassigned.push(square);
+                    }
+                });
+                
+                unassignedLen = unassigned.length;
+                
+                // Check for pairs.
+                for (i = 0; i < unassignedLen - 1; i++) {
+                    for (j = i + 1; j < unassignedLen; j++) {
+                        union = unionArray(digits[unassigned[i]], digits[unassigned[j]]);
+                        if (union.length === 2) {
+                            // Eliminate digits from all other squares in unit.    
+                            notNaked = unassigned.slice();
+                            notNaked.splice(j, 1);
+                            notNaked.splice(i, 1); 
+
+                            if (!sudoku.solver.eliminateMultiple(digits, notNaked, union)) {
+                                return false;
                             }
                         }
-                        
-                        // A valid naked pair/triple/quad group has beeen found in this unit.
-                        if (naked.length === digits[unit[s]].length && sudoku.solver.alreadyEliminated.naked.indexOf(naked.sort().toString()) === -1) {
-                            // Eliminate all digits within the naked group from every square outside the naked group in this unit.
-                            for (t in unit) {
-                                if (unit.hasOwnProperty(t) && naked.indexOf(unit[t]) === -1) {
-                                    for (d in digits[unit[s]]) {
-                                        if (digits[unit[s]].hasOwnProperty(d)) {
-                                            if (!sudoku.solver.eliminate(digits, unit[t], digits[unit[s]][d])) {
-                                                return false;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            sudoku.solver.alreadyEliminated.naked.push(naked.sort().toString());
-                        }
-                        
                     }
                 }
-            }
-            
+                
+                // TODO: Check for triples.
+                // TODO: Check for quads.
+                
+            });
+
             return digits;
-        },
-        
+        }        
     };
 
     sudoku.parseGrid = function () {
@@ -372,6 +393,60 @@
         }
         
         return true;
+    };
+    
+    /*
+        Each implementation
+    */
+    each = function( iterable, callback, thisObject ) {
+        var i, key,
+            breaker = {},
+            len = iterable.length;
+              
+        try {
+            // Use native Array.forEach if available.
+            if ( Array.prototype.forEach && iterable.forEach === Array.prototype.forEach ) {
+                iterable.forEach( callback, thisObject );
+            } 
+            else if ( typeof iterable.length === "number" ) {
+                for ( i = 0; i < len; i++ ) {
+                    callback.call( thisObject, iterable[i], i, iterable );
+                }
+            } else {
+                for ( key in iterable ) {
+                    if ( iterable.hasOwnProperty( key ) ) {
+                        callback.call( thisObject, iterable[key], key, iterable );
+                    }
+                }
+            }
+        } catch (e) {
+            if ( e !== breaker ) {
+                throw e;
+            }
+        }
+  
+        return iterable;
+    };
+    
+    /*
+        Merges two arrays together by their shared values.
+        for example: [1, 2, 3] and [1, 2, 4, 5] becomes [1, 2]
+    */
+    unionArray = function (a, b) {
+        var union = [];
+    
+        each(a, function (value) {
+            if (union.indexOf(value) === -1) {
+                union.push(value);
+            }
+        }); 
+        each(b, function (value) {
+            if (union.indexOf(value) === -1) {
+                union.push(value);
+            }
+        }); 
+        
+        return union;
     };
    
     global.sudoku = sudoku;
