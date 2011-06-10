@@ -280,7 +280,6 @@
                 }    
                 
                 // Check for pairs.
-                sudoku.test.timer.start("Pairs");
                 for (i = 0; i < unassigned.length - 1; i++) {
                     for (j = i + 1; j < unassigned.length; j++) {
                     
