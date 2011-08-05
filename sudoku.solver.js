@@ -38,15 +38,25 @@
             sudoku.solver.digits = cloneObject(sudoku.DIGITS);
             sudoku.solver.alreadyEliminatedNakeds = [];
             
-            // Assign digits from the grid.
-            for (s in gridDigits) {
-                if (gridDigits.hasOwnProperty(s)) {
-                    if (!sudoku.solver.assign(sudoku.solver.digits, s, gridDigits[s])) {
-                        return false;
-                    }            
-                }
+            // Assign grid digits.
+            if (!sudoku.solver.assignGridDigits(sudoku.solver.digits, gridDigits)) {
+                return false;
             }
-            
+
+            if (!sudoku.solver.loop(sudoku.solver.digits)) {
+                return false;
+            }
+
+            if (!sudoku.solver.brute(sudoku.solver.digits)) {
+                return false;           
+            }
+
+            return sudoku.solver.digits;
+        },
+
+        loop: function (digits) {
+            var previousDigits;
+
             /* 
                 Run methods that doesn't have a direct relationship with
                 the square and digit that was affected by the elimination in
@@ -54,25 +64,39 @@
             */
             do {
                 // Create a clone to compare and see if something changed during this iteration.
-                sudoku.solver.previousDigits = cloneObject(sudoku.solver.digits);
+                previousDigits = cloneObject(digits);
 
                 // Check single candidate, and assign if found.
-                if (!sudoku.solver.assignSingleCandidate(sudoku.solver.digits)) {
+                if (!sudoku.solver.assignSingleCandidate(digits)) {
                     return false;
                 }
                 
                 // Check candidate lines, and eliminate if found.
-                if (!sudoku.solver.eliminateCandidateLines(sudoku.solver.digits)) {
+                if (!sudoku.solver.eliminateCandidateLines(digits)) {
                     return false;
                 }
                 
                 // Check naked pairs/triples/quads, and eliminate if found.
-                if (!sudoku.solver.eliminateNaked(sudoku.solver.digits)) {
+                if (!sudoku.solver.eliminateNaked(digits)) {
                     return false;
                 }
-            } while (!compareObject(sudoku.solver.previousDigits, sudoku.solver.digits));
+            } while (!compareObject(previousDigits, digits));
             
-            return sudoku.solver.digits;
+            return digits;
+              
+        },
+
+        assignGridDigits: function (digits, gridDigits) {
+            // Assign digits from the grid.
+            for (s in gridDigits) {
+                if (gridDigits.hasOwnProperty(s)) {
+                    if (!sudoku.solver.assign(digits, s, gridDigits[s])) {
+                        return false;
+                    }            
+                }
+            }          
+
+            return digits;
         },
         
         /*
@@ -141,6 +165,7 @@
         */
         assignSingleCandidate: function (digits) {
             var u, s, possible, unit, digit;
+
             
             for (u = 0; u < sudoku.ALL_UNITS.length; u++) {
                 unit = sudoku.ALL_UNITS[u];
@@ -362,6 +387,43 @@
             }
 
             return digits;
+        },
+        brute: function (digits) {
+            var i,
+                minPossible = {square: null, digits: "12345678910"},
+                solved = true;
+
+            // Find the square with least possible digits or check if the puzzle is now solved!
+            for (i in digits) {
+                if (digits.hasOwnProperty(i)) {
+                    solved &= (digits[i].length === 1);
+                    if (digits[i].length > 1 && (digits[i].length < minPossible.digits.length)) {
+                        minPossible.square = i;
+                        minPossible.digits = digits[i];
+                    }
+                }
+            }
+
+            if (solved) {
+                sudoku.solver.digits = digits;
+                return digits;
+            }
+            
+            
+            // Try to assign each possible digit and see if anyone turns out to be successful.
+            for (i = 0; i < minPossible.digits.length; i++) {
+                digitsCopy = cloneObject(digits);
+
+
+                if (!sudoku.solver.brute(sudoku.solver.assign(digitsCopy, minPossible.square, minPossible.digits[i]))) {
+                    continue;
+                }
+                result = sudoku.solver.loop(digitsCopy);
+                if (result) {
+                    return sudoku.solver.brute(result);
+                }
+            }
+            return false;
         }
                 
     };

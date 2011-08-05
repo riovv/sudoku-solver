@@ -25,17 +25,24 @@ SUMMARY (total time: 0.064s)
 ==============================
 Group Test: SM 
 Browser: firefox 4
-Date: June 9, 2011 11:20PM
+Date: August 6, 2011 01:11AM
 ==============================
 sm
-SM_1: [FAILED] 38/81 in 0.009s with 92442129447518200000 possible solutions left
-SM_2: [FAILED] 23/81 in 0.018s with 4.141407399248816e+34 possible solutions left
-SM_3: [SOLVED] in 0.016s
-SM_4: [FAILED] 40/81 in 0.009s with 6499837226778624000 possible solutions left
-SM_5: [FAILED] 45/81 in 0.007s with 3611020681543680 possible solutions left
-SM_6: [FAILED] 31/81 in 0.012s with 1.8260173718028288e+26 possible solutions left
-SM_7: [FAILED] 43/81 in 0.01s with 43332248178524160 possible solutions left
-SM_8: [FAILED] 45/81 in 0.01s with 3423782572130304 possible solutions left
-SUMMARY (total time: 0.09099999999999998s)
-1 [SOLVED]
-7 [FAILED]
+SM_1: [SOLVED] in 0.019s
+SM_2: [SOLVED] in 0.094s
+SM_3: [SOLVED] in 0.013s
+SM_4: [SOLVED] in 0.016s
+SM_5: [SOLVED] in 0.009s
+SM_6: [SOLVED] in 0.016s
+SM_7: [SOLVED] in 0.012s
+SM_8: [SOLVED] in 0.011s
+SUMMARY (total time: 0.19000000000000006s)
+8 [SOLVED]
+
+==============================
+The world's hardest sudoku? Arto Inkala
+http://www.guardian.co.uk/media/2010/aug/22/worlds-hardest-sudoku#
+Browser: firefox 4
+Date: August 6, 2011 01:11AM
+==============================
+world_1: [SOLVED] in 0.029s 
